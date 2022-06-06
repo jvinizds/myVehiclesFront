@@ -21,7 +21,7 @@ export const InputAreaForEach = styled.View`
 const Input = styled.TextInput`
     flex: 1;
     font-size: 16px;
-    color: ${props => props.theme.color_secondary};
+    color: ${themes.padrao.colors.neutral.neutral_0};
     margin-left: 8px;
 `
 
