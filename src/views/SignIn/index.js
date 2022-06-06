@@ -29,6 +29,7 @@ export default () => {
       let res = await Api.signIn(emailField, senhaField)
       if (res.access_token) {
         await AsyncStorage.setItem('token', res.access_token)
+        await AsyncStorage.setItem('user_id', res.user_id)
         navigation.dispatch(
           CommonActions.reset({
             index: 0,

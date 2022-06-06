@@ -16,7 +16,6 @@ export const InputAreaForEach = styled.View`
     flex-direction: row;
     border-radius: 32px;
     padding-left: 16px;
-    align-items: center;
     margin-bottom: 16px;
 `
 const Input = styled.TextInput`

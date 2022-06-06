@@ -1,26 +1,34 @@
-import React, { useState } from 'react'
-import { Text, TextInput, StyleSheet, Platform, ActivityIndicator, Button, View }
+import React, { useState, useEffect } from 'react'
+import { StyleSheet, Platform, View }
     from 'react-native'
-import { useNavigation } from '@react-navigation/native'
-import { MaterialCommunityIcons } from '@expo/vector-icons'
+import { useNavigation, CommonActions } from '@react-navigation/native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import PickerSelect from 'react-native-picker-select';
+import Api from '../../resources/api/Api'
 import Header from '../../components/styled/Header'
 import themes from '../../themes'
-import Api from '../../resources/api/Api'
 import { InputArea, InputFormVeiculo } from '../../components/styled/Input'
-import { StyledButtonPrimario, StyledButtonSecundario, StyledButtonTerciario } from '../../components/styled/Botao'
+import { StyledButtonSecundario, StyledButtonTerciario } from '../../components/styled/Botao'
+import { StyledButtonDelete } from './styles'
 
 export default ({ route }) => {
     const navigation = useNavigation()
-    //Veio algum dado através da rota de navegação?
+
     const dadosExistentes = route.params ? route.params.veiculo :
         {
-            marca: '', modelo: '', cor: '', placa: '',
-            renavam: ''
+            tipo: 'Carro', marca: '', modelo: '', cor: '',
+            placa: '', renavam: '', user_id: ''
         }
 
     const [veiculo, setVeiculo] = useState(dadosExistentes)
 
+    useEffect(() => {
+        setVeiculo(dadosExistentes)
+    }, [route])
+
+
     const salvarVeiculo = async (dadosVeiculo) => {
+        dadosVeiculo.user_id = await AsyncStorage.getItem('user_id')
         let salvar = dadosVeiculo.hasOwnProperty('_id') ? await Api.alteraVeiculo(dadosVeiculo) : await Api.incluiVeiculo(dadosVeiculo)
         if (salvar.hasOwnProperty('errors')) {
             Platform.OS === 'web' ? alert(`‼️Erro: ${salvar.errors[0].msg}`) : Alert.alert("‼️Erro", salvar.errors[0].msg)
@@ -30,10 +38,40 @@ export default ({ route }) => {
         }
     }
 
+    const deletarVeiculo = async (id) => {
+        let res = await Api.deletaVeiculo(id)
+        if (res.hasOwnProperty('acknowledged')) {
+            navigation.dispatch(
+                CommonActions.reset({
+                    index: 0,
+                    routes: [
+                        { name: 'Veiculos' },
+                    ],
+                })
+            )
+        } else {
+            Platform.OS === 'web' ? alert(`‼️Erro: ${res.errors[0].msg}`) : Alert.alert("‼️Erro", res.errors[0].msg)
+        }
+    }
+
     return (
         <View>
             <Header headerTitle="Veiculo" />
+            {dadosExistentes.marca !== '' &&
+                <StyledButtonDelete icon="delete" onPress={() => deletarVeiculo(veiculo._id)} />
+            }
             <InputArea>
+                <PickerSelect
+                    onValueChange={(value) => setVeiculo({ ...veiculo, tipo: value })}
+                    value={veiculo.tipo}
+                    items={[
+                        { label: 'Carro', value: 'Carro' },
+                        { label: 'Moto', value: 'Moto' },
+                        { label: 'Caminhão', value: 'Caminhao' },
+                        { label: 'Onibus', value: 'Onibus' }]}
+                    style={pickerSelectStyles}
+                    placeholder={{}}
+                />
                 <InputFormVeiculo
                     name='marca'
                     onChangeText={(text) => setVeiculo({ ...veiculo, marca: text })}
@@ -87,10 +125,33 @@ export default ({ route }) => {
         </View>
     )
 }
-const styles = StyleSheet.create({
-    input: {
-        height: 40, margin: 8, borderWidth: 1,
-        borderColor: themes.padrao.colors.brand.terciario, padding: 8
+
+const pickerSelectStyles = StyleSheet.create({
+    inputIOS: {
+        height: 64,
+        backgroundColor: themes.padrao.colors.neutral.neutral_20,
+        flexDirection: 'row',
+        borderRadius: 32,
+        paddingLeft: 16,
+        marginBottom: 16,
+        fontSize: 16
     },
-    label: { marginLeft: 8, marginTop: 8, marginBottom: 4, fontSize: 14 }
-})
+    inputAndroid: {
+        height: 64,
+        backgroundColor: themes.padrao.colors.neutral.neutral_20,
+        flexDirection: 'row',
+        borderRadius: 32,
+        paddingLeft: 16,
+        marginBottom: 16,
+        fontSize: 16
+    },
+    inputWeb: {
+        height: 64,
+        backgroundColor: themes.padrao.colors.neutral.neutral_20,
+        flexDirection: 'row',
+        borderRadius: 32,
+        paddingLeft: 16,
+        marginBottom: 16,
+        fontSize: 16
+    }
+});

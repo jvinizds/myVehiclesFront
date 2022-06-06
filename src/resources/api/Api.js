@@ -42,9 +42,9 @@ export default {
         const json = await req.json()
         return json
     },
-    getVeiculos: async () => {
+    getVeiculos: async (user_id) => {
         let token = await AsyncStorage.getItem('token')
-        const req = await fetch(`${BASE_API}/veiculos`, {
+        const req = await fetch(`${BASE_API}/veiculos/user_id/${user_id}`, {
             method: 'GET',
             headers: {
                 Accept: 'application/json',
@@ -79,6 +79,19 @@ export default {
                 'x-access-token': token
             },
             body: JSON.stringify(dadosVeiculo)
+        })
+        const json = await req.json()
+        return json
+    },
+    deletaVeiculo: async (id) => {
+        let token = await AsyncStorage.getItem('token')
+        const req = await fetch(`${BASE_API}/veiculos/${id}`, {
+            method: 'DELETE',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'x-access-token': token
+            }
         })
         const json = await req.json()
         return json
